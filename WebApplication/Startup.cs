@@ -48,7 +48,7 @@ namespace WebApplication
 
             // Другие сервисы, если они необходимы (например, Swagger, CORS и т.д.)
         }
-
+        //asf
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // Настройка обработки ошибок в зависимости от окружения (например, Development)
