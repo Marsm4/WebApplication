@@ -1,17 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication.Models;
 using WebApplication.Services;
 
 namespace WebApplication.Controllers
 {
-    //    [Route("api/[controller]")]
-    //    [ApiController]
-    //    public class AuthController : ControllerBase
-    //    {
-    //    }
-    //}
-
 
     // Controllers/AuthController.cs
     [Route("api/auth")]
@@ -42,5 +36,13 @@ namespace WebApplication.Controllers
             var token = await _userService.GenerateJwtToken(user);
             return Ok(new TokenResponse { Token = token });
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _userService.GetAllUsersAsync();
+            return Ok(users);
+        }
+
     }
 }

@@ -4,56 +4,77 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebApplication.Data;
 using WebApplication.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Добавляем сервисы в контейнер
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddScoped<IUserService, UserService>();
-
-// Настройка аутентификации с использованием JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureWebHostDefaults(webBuilder =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        webBuilder.ConfigureServices((context, services) =>
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
-        };
-    });
+            // Добавляем контекст БД
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(context.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddAuthorization();
+            // Добавляем сервисы
+            services.AddScoped<IUserService, UserService>();
 
-builder.Services.AddControllers();
+            // Настройка аутентификации с использованием JWT
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidIssuer = context.Configuration["Jwt:Issuer"],
+                        ValidAudience = context.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(context.Configuration["Jwt:SecretKey"]))
+                    };
+                });
 
-var app = builder.Build();
+            // Настройка авторизации
+            services.AddAuthorization();
 
-// Применяем миграции и заполняем базу данных начальными данными
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    context.Database.Migrate();
-    SeedData.Initialize(services);
-}
+            // Добавляем контроллеры
+            services.AddControllers();
+        });
 
-// Настройка обработки ошибок в зависимости от окружения
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
+        webBuilder.Configure(app =>
+        {
+            // Получаем доступ к информации о среде
+            var env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
 
-// Включаем аутентификацию и авторизацию
-app.UseAuthentication();
-app.UseAuthorization();
+            // Применяем миграции и заполняем базу данных начальными данными
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<ApplicationDbContext>();
+                context.Database.Migrate();
+                SeedData.Initialize(services);
+            }
 
-// Настройка маршрутов для контроллеров
-app.MapControllers();
+            // Настройка обработки ошибок в зависимости от окружения
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
 
-app.Run();
+            // Включаем аутентификацию и авторизацию
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            // Используем эндпоинты для контроллеров
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers(); // Здесь используется MapControllers на IEndpointRouteBuilder
+            });
+        });
+    })
+    .Build();
+
+// Запуск приложения
+host.Run();

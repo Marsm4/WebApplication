@@ -7,7 +7,9 @@
         public string Name { get; set; }
         public string Description { get; set; }
         public string Password { get; set; }
+        public string Role { get; set; }  // Новый параметр для роли
     }
+
 
     // Models/LoginRequest.cs
     public class LoginRequest

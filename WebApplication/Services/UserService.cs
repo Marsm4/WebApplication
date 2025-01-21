@@ -21,7 +21,7 @@ namespace WebApplication.Services
             _configuration = configuration;
         }
 
-        public async Task<User> RegisterAsync(string email, string name, string description, string password)
+        public async Task<User> RegisterAsync(string email, string name, string description, string password, string role = "User")
         {
             if (_context.Users.Any(u => u.Email == email))
                 throw new Exception("Email is already taken.");
@@ -32,7 +32,7 @@ namespace WebApplication.Services
                 Name = name,
                 Description = description,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-                Role = "User"
+                Role = role  // Используем переданную роль
             };
 
             _context.Users.Add(user);
@@ -69,6 +69,14 @@ namespace WebApplication.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
+        public Task<User> RegisterAsync(string email, string name, string description, string password)
+        {
+            throw new NotImplementedException();
         }
     }
 
