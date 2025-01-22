@@ -1,15 +1,26 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApplication.Models
+namespace MyWebApp.Models
 {
     // Models/User.cs
-    public class Users
+    public class User
     {
         [Key]
-        public int id_User { get; set; }
+        public int Id { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Required]
         public string Name { get; set; }
+
         public string Description { get; set; }
 
-        public bool isAdmin { get; set; }
+        [Required]
+        public string Password { get; set; }
+
+        [Required]
+        public string Role { get; set; } = "User"; // Default role is "User"
     }
 }

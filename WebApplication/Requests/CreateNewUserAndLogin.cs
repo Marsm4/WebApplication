@@ -1,4 +1,4 @@
-﻿namespace WebApplication.Requests
+﻿namespace MyWebApp.Requests
 {
     public class CreateNewUserAndLogin
     {

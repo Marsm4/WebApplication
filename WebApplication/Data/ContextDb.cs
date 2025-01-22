@@ -1,19 +1,16 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Utilities;
-using WebApplication.Models;
-namespace WebApplication.Data
+using MyWebApp.Models;
+namespace MyWebApp.Data
 {
 
     public class ContextDb : DbContext
     {
-        public ContextDb(DbContextOptions options) : base(options)
-        {
+        public ContextDb(DbContextOptions<ContextDb> options) : base(options) { }
 
-        }
-
-        public DbSet<Users> Users { get; set; }
-        public DbSet<Logins> Logins { get; set; }
+        public DbSet<User> Users { get; set; }
     }
+
 
 }

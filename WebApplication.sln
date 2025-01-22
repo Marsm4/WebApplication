@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication", "WebApplication\WebApplication.csproj", "{24476612-7128-40D3-8B3C-D27C6C7FAA4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyWebApp", "WebApplication\MyWebApp.csproj", "{24476612-7128-40D3-8B3C-D27C6C7FAA4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
