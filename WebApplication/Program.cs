@@ -8,73 +8,35 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using WebApplication.Interfaces;
 
-var host = Host.CreateDefaultBuilder(args)
-    .ConfigureWebHostDefaults(webBuilder =>
-    {
-        webBuilder.ConfigureServices((context, services) =>
-        {
-            // Добавляем контекст БД
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(context.Configuration.GetConnectionString("DefaultConnection")));
+var builder = WebApplication.CreateBuilder(args);
 
-            // Добавляем сервисы
-            services.AddScoped<IUserService, UserService>();
+// Add services to the container.
 
-            // Настройка аутентификации с использованием JWT
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidIssuer = context.Configuration["Jwt:Issuer"],
-                        ValidAudience = context.Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(context.Configuration["Jwt:SecretKey"]))
-                    };
-                });
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-            // Настройка авторизации
-            services.AddAuthorization();
+builder.Services.AddDbContext<ContextDb>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("TestDbString")), ServiceLifetime.Scoped);
 
-            // Добавляем контроллеры
-            services.AddControllers();
-        });
+builder.Services.AddScoped<IUsersLoginsService, UserLoginService>();
 
-        webBuilder.Configure(app =>
-        {
-            // Получаем доступ к информации о среде
-            var env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+var app = builder.Build();
 
-            // Применяем миграции и заполняем базу данных начальными данными
-            using (var scope = app.ApplicationServices.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<ApplicationDbContext>();
-                context.Database.Migrate();
-                SeedData.Initialize(services);
-            }
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-            // Настройка обработки ошибок в зависимости от окружения
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+app.UseHttpsRedirection();
 
-            // Включаем аутентификацию и авторизацию
-            app.UseAuthentication();
-            app.UseAuthorization();
+app.UseAuthorization();
 
-            // Используем эндпоинты для контроллеров
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers(); // Здесь используется MapControllers на IEndpointRouteBuilder
-            });
-        });
-    })
-    .Build();
+app.MapControllers();
 
-// Запуск приложения
-host.Run();
+app.Run();
