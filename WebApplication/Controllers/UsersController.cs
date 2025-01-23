@@ -1,14 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MyWebApp.Interfaces;
-using MyWebApp.Models;
 using MyWebApp.Requests;
-using MyWebApp.Services;
 
 namespace MyWebApp.Controllers
 {
-
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
@@ -36,6 +31,18 @@ namespace MyWebApp.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             return await _userService.GetAllUsersAsync();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            return await _userService.GetUserByIdAsync(id);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserDto userDto)
+        {
+            return await _userService.UpdateUserAsync(id, userDto);
         }
 
         [HttpDelete("{id}")]

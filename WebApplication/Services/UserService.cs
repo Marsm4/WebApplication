@@ -9,7 +9,7 @@ namespace MyWebApp.Services
 {
     public class UserService : IUserService
     {
-        private readonly ContextDb _context; // Используем ContextDb, а не DbContext
+        private readonly ContextDb _context;
 
         public UserService(ContextDb context)
         {
@@ -51,6 +51,31 @@ namespace MyWebApp.Services
         {
             var users = await _context.Users.ToListAsync();
             return new OkObjectResult(users);
+        }
+
+        public async Task<IActionResult> GetUserByIdAsync(int userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                return new NotFoundObjectResult("User not found.");
+
+            return new OkObjectResult(user);
+        }
+
+        public async Task<IActionResult> UpdateUserAsync(int userId, UpdateUserDto userDto)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                return new NotFoundObjectResult("User not found.");
+
+            user.Name = userDto.Name ?? user.Name;
+            user.Description = userDto.Description ?? user.Description;
+            user.Password = userDto.Password ?? user.Password;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return new OkObjectResult("User updated successfully.");
         }
 
         public async Task<IActionResult> DeleteUserAsync(int userId)
