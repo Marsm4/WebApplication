@@ -38,14 +38,18 @@ namespace MyWebApp.Services
 
         public async Task<IActionResult> LoginAsync(LoginDto loginDto)
         {
+            // Ищем пользователя по email
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == loginDto.Email && u.Password == loginDto.Password);
+                .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
-            if (user == null)
-                return new UnauthorizedObjectResult("Invalid credentials.");
+            // Проверяем, найден ли пользователь и совпадает ли пароль
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
+                return new UnauthorizedObjectResult("Invalid credentials.");  // Пароль неверный
 
+            // Если аутентификация прошла успешно
             return new OkObjectResult(new { Message = "Login successful", Role = user.Role });
         }
+
 
         public async Task<IActionResult> GetAllUsersAsync()
         {
@@ -89,5 +93,29 @@ namespace MyWebApp.Services
 
             return new OkObjectResult("User deleted successfully.");
         }
+        public async Task<bool> RegisterAsync(RegisterUserDto userDto)
+        {
+            // Преобразуем DTO в объект User
+            var user = new User
+            {
+                Email = userDto.Email,
+                Password = HashPassword(userDto.Password), // Не забудьте хешировать пароль!
+                Name = userDto.Name,
+                Description = userDto.Description
+            };
+
+            // Добавляем пользователя в базу данных
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        private string HashPassword(string password)
+        {
+            // Ваш метод хеширования пароля, например, используя SHA256
+            return BCrypt.Net.BCrypt.HashPassword(password);
+        }
+
     }
 }

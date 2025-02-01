@@ -18,8 +18,14 @@ namespace MyWebApp.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(RegisterUserDto userDto)
         {
-            return await _userService.RegisterUserAsync(userDto);
+            var result = await _userService.RegisterAsync(userDto);
+            if (result)
+            {
+                return Ok("User registered successfully.");
+            }
+            return BadRequest("Registration failed.");
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
@@ -50,5 +56,7 @@ namespace MyWebApp.Controllers
         {
             return await _userService.DeleteUserAsync(id);
         }
+
+
     }
 }
