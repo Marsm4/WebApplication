@@ -15,15 +15,20 @@ namespace MyWebApp.Controllers
             _userService = userService;
         }
 
+        //[HttpPost("register")]
+        //public async Task<IActionResult> RegisterUser(RegisterUserDto userDto)
+        //{
+        //    var result = await _userService.RegisterAsync(userDto);
+        //    if (result)
+        //    {
+        //        return Ok("User registered successfully.");
+        //    }
+        //    return BadRequest("Registration failed.");
+        //}
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(RegisterUserDto userDto)
         {
-            var result = await _userService.RegisterAsync(userDto);
-            if (result)
-            {
-                return Ok("User registered successfully.");
-            }
-            return BadRequest("Registration failed.");
+            return await _userService.RegisterUserAsync(userDto);
         }
 
 

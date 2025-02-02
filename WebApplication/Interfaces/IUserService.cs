@@ -12,6 +12,6 @@ namespace MyWebApp.Interfaces
         Task<IActionResult> DeleteUserAsync(int userId);
 
         // Добавьте метод для регистрации пользователя
-        Task<bool> RegisterAsync(RegisterUserDto userDto);  // Добавьте сюда
+        //Task<bool> RegisterAsync(RegisterUserDto userDto);  // Добавьте сюда
     }
 }

@@ -7,6 +7,8 @@
     <InvariantGlobalization>false</InvariantGlobalization>
     <PublishAot>false</PublishAot>
     <UserSecretsId>89cdbf4d-4fad-42fd-b236-d9fe7f25ac0f</UserSecretsId>
+    <OutputType>Exe</OutputType>
+    <StartupObject></StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
