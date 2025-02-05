@@ -26,7 +26,7 @@ namespace MyWebApp.Services
                 Email = userDto.Email,
                 Name = userDto.Name,
                 Description = userDto.Description,
-                Password = userDto.Password, // Note: Hash the password in production
+                Password = userDto.Password, // Храним пароль в открытом виде (небезопасно!)
                 Role = "User"
             };
 
@@ -38,18 +38,14 @@ namespace MyWebApp.Services
 
         public async Task<IActionResult> LoginAsync(LoginDto loginDto)
         {
-            // Ищем пользователя по email
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
-            // Проверяем, найден ли пользователь и совпадает ли пароль
-            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
-                return new UnauthorizedObjectResult("Invalid credentials.");  // Пароль неверный
+            if (user == null || user.Password != loginDto.Password) // Без хеширования
+                return new UnauthorizedObjectResult("Invalid credentials.");
 
-            // Если аутентификация прошла успешно
             return new OkObjectResult(new { Message = "Login successful", Role = user.Role });
         }
-
 
         public async Task<IActionResult> GetAllUsersAsync()
         {
@@ -93,29 +89,21 @@ namespace MyWebApp.Services
 
             return new OkObjectResult("User deleted successfully.");
         }
+
         public async Task<bool> RegisterAsync(RegisterUserDto userDto)
         {
-            // Преобразуем DTO в объект User
             var user = new User
             {
                 Email = userDto.Email,
-                Password = HashPassword(userDto.Password), // Не забудьте хешировать пароль!
+                Password = userDto.Password, // Пароль без хеширования
                 Name = userDto.Name,
                 Description = userDto.Description
             };
 
-            // Добавляем пользователя в базу данных
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return true;
         }
-
-        private string HashPassword(string password)
-        {
-            // Ваш метод хеширования пароля, например, используя SHA256
-            return BCrypt.Net.BCrypt.HashPassword(password);
-        }
-
     }
 }
