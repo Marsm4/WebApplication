@@ -44,8 +44,14 @@ namespace MyWebApp.Services
             if (user == null || user.Password != loginDto.Password) // Без хеширования
                 return new UnauthorizedObjectResult("Invalid credentials.");
 
-            return new OkObjectResult(new { Message = "Login successful", Role = user.Role });
+            // Формируем приветственное сообщение
+            string message = user.Role == "User"
+                ? $"Привет, дорогой {user.Name}!"
+                : "Login successful"; // Для админа оставляем стандартное сообщение
+
+            return new OkObjectResult(new { Message = message, Role = user.Role });
         }
+
 
         public async Task<IActionResult> GetAllUsersAsync()
         {
@@ -105,5 +111,7 @@ namespace MyWebApp.Services
 
             return true;
         }
+     
+
     }
 }
