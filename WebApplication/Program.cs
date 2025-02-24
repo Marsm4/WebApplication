@@ -13,6 +13,7 @@ using MyWebApp.Interfaces;
 using MyWebApp.Services;
 using System.Globalization;
 using System.Text;
+using WebApplication1;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ContextDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+// Добавляем поддержку базы данных SQL Server
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Добавляем контроллеры (REST API)
+builder.Services.AddControllers();
 // Регистрация сервисов
 builder.Services.AddScoped<IUserService, UserService>();
 
@@ -32,7 +38,17 @@ builder.Services.AddCors(options =>
                           .AllowAnyMethod()
                           .AllowAnyHeader());
 });
-
+// Подключаем Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
 // Настройка JWT-аутентификации
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
