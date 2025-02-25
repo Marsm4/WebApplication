@@ -85,6 +85,7 @@ public class MoviesController : ControllerBase
         var movie = await _context.Movies.FindAsync(id);
         if (movie == null)
         {
+            Console.WriteLine($"Фильм с ID {id} не найден");
             return NotFound();
         }
 
