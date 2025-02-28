@@ -1,51 +1,81 @@
-﻿
-using System.Net.Http.Json;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MyWebApp.Interfaces;
 using WebApplication1;
 
 namespace BlazorMovieApp.Services
 {
-    public class MovieService
+    public class MovieService : IMovieService
     {
-        private readonly HttpClient _httpClient;
+        private readonly ApplicationDbContext _context;
 
-        public MovieService(HttpClient httpClient)
+        public MovieService(ApplicationDbContext context)
         {
-            _httpClient = httpClient;
+            _context = context;
         }
 
-        public async Task<List<Movie>> GetMoviesAsync()
+        public async Task<ActionResult<IEnumerable<Movie>>> GetMoviesAsync()
         {
-            return await _httpClient.GetFromJsonAsync<List<Movie>>("api/movies");
+            return await _context.Movies.ToListAsync();
         }
 
-        public async Task<Movie> GetMovieByIdAsync(int id)
+        public async Task<ActionResult<Movie>> GetMovieByIdAsync(int id)
         {
-            return await _httpClient.GetFromJsonAsync<Movie>($"api/movies/{id}");
+            var movie = await _context.Movies.FindAsync(id);
+            if (movie == null)
+            {
+                return new NotFoundResult();
+            }
+            return movie;
         }
 
-        public async Task AddMovieAsync(Movie movie)
+        public async Task<ActionResult<Movie>> AddMovieAsync(Movie movie)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/movies", movie);
-            response.EnsureSuccessStatusCode();
+            _context.Movies.Add(movie);
+            await _context.SaveChangesAsync();
+            return new CreatedAtActionResult("GetMovie", "Movies", new { id = movie.Id }, movie);
         }
 
-        public async Task UpdateMovieAsync(Movie movie)
+        public async Task<IActionResult> UpdateMovieAsync(int id, Movie movie)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/movies/{movie.Id}", movie);
-            response.EnsureSuccessStatusCode();
-        }
+            if (id != movie.Id)
+            {
+                return new BadRequestResult();
+            }
 
-        public async Task DeleteMovieAsync(int id)
-        {
+            _context.Entry(movie).State = EntityState.Modified;
+
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/movies/{id}");
-                response.EnsureSuccessStatusCode();
+                await _context.SaveChangesAsync();
             }
-            catch (HttpRequestException ex)
+            catch (DbUpdateConcurrencyException)
             {
-                Console.WriteLine($"Ошибка при удалении фильма: {ex.Message}");
+                if (!_context.Movies.Any(e => e.Id == id))
+                {
+                    return new NotFoundResult();
+                }
+                else
+                {
+                    throw;
+                }
             }
+
+            return new NoContentResult();
+        }
+
+        public async Task<IActionResult> DeleteMovieAsync(int id)
+        {
+            var movie = await _context.Movies.FindAsync(id);
+            if (movie == null)
+            {
+                return new NotFoundResult();
+            }
+
+            _context.Movies.Remove(movie);
+            await _context.SaveChangesAsync();
+
+            return new NoContentResult();
         }
     }
 }
