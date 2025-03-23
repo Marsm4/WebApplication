@@ -33,6 +33,7 @@ builder.Services.AddControllers();
 // Регистрация сервисов
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieService, MovieService>(); // Добавляем MovieService
+builder.Services.AddScoped<IChatService, ChatService>(); // Добавляем ChatService
 
 // Добавление CORS
 builder.Services.AddCors(options =>
@@ -93,22 +94,3 @@ app.MapControllers();
 
 // Запуск приложения
 app.Run();
-
-// ErrorController (с обработчиком ошибок)
-[ApiController]
-[Route("error")]
-public class ErrorController : ControllerBase
-{
-    [HttpGet]
-    public IActionResult HandleError()
-    {
-        var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
-        var exception = context?.Error;
-
-        return Problem(
-            title: "Internal Server Error",
-            detail: exception?.Message ?? "An unexpected error occurred.",
-            statusCode: StatusCodes.Status500InternalServerError
-        );
-    }
-}
